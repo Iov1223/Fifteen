@@ -6,12 +6,22 @@ using System.Windows;
 
 namespace Fifteen
 {
+    public delegate void DeligateGame();
+    public class myClass 
+    {
+        public event DeligateGame myEvent;
+        public void InvokeEvent()
+        {
+            myEvent.Invoke();
+        }
+    }
+
     class Game
     {
-        public Random random = new Random();
-        public int[] array = new int[16];
-        public int[,] field = new int[4, 4];
-        Point zero;
+        private Random random = new Random();
+        private int[] array = new int[16];
+        private int[,] field = new int[4, 4];
+        private Point zero;
         private int[] FillArr()
         {
             array = Enumerable.Range(0, 16).ToArray().OrderBy(i => random.Next()).ToArray();
@@ -44,7 +54,7 @@ namespace Fifteen
                 {
                     Console.Write(field[i, j] + " \t");
                 }
-                Console.WriteLine();
+                Console.WriteLine("\n");
             }
         }
         public void Swap(ref int a, ref int b)
@@ -86,19 +96,43 @@ namespace Fifteen
             }
         }
     }
+    class Write
+    {
+        private StreamWriter sw = new StreamWriter("game.txt", true);
+        public void WriteToFile(int[,] arr)
+        {
+            sw.AutoFlush = true;
+            Console.SetOut(sw);
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    Console.Out.Write(arr[i, j] + " \t");
+                }
+                Console.Out.WriteLine("\n");
+            }
+            Console.WriteLine();
+
+        }
+    }
+
 
     internal class Program
     {
         static void Main(string[] args)
         {
+           
             Game game = new Game();
+            myClass mc = new myClass();
             game.ArrToField();
-            game.ShowField();
-            while (true)
+            mc.myEvent += new DeligateGame(game.ShowField);
+            mc.InvokeEvent();
+            do 
             {
                 ConsoleKeyInfo keyinfo = Console.ReadKey();
                 switch (keyinfo.Key)
                 {
+                   
                     case ConsoleKey.UpArrow:
                         game.Up();
                         break;
@@ -112,8 +146,8 @@ namespace Fifteen
                         game.Right();
                         break;
                 }
-                game.ShowField();
-            }
+                mc.InvokeEvent();
+            } while (true);
         }
     }
 }
